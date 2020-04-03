@@ -21,6 +21,7 @@
 
 clc;
 clear;
+close all; % Clear all plot windows
 
 
 %% Mechanical parameters of the robot
@@ -129,13 +130,23 @@ counter_error = 0; % counter of non successfull gaits
         disp_text = ['Test ended for Kp = ',num2str(Kp), ' -- Desired forward velocity = ', num2str(desired_vel), ' -- Success = ', num2str(counter_success), '/', num2str(iterations)];
 
     end %for desired_vel
-
+    
+    
     test_result = ['Test ended for Kp = ', num2str(Kp), ' -- Success = ', num2str(counter_success), '/', num2str(iterations)];
     disp(test_result);
 
     %plotting successful vs non successful gaits according to the angle walking and velocity
     walking(successful_angles, successful_velocities, angles_n, velocity_n, angles_flight, velocity_flight, Kp, counter_success ,iterations);
-%    pause;
+    
+    %cleaning the plotting vectors of successful angles
+    successful_angles = []; % keeps succesful angles during each Kp iteration
+    successful_velocities = []; % keeps succesful angles during each Kp iteration
+    angles_flight = [];
+    velocity_flight = [];
+    angles_n = [];
+    velocity_n = [];
+    
+    %    pause;
     
   end %for controller Kp
 
@@ -145,11 +156,7 @@ kp_optim(successful_vector_gains); %plotting results for kp altogheter
  
 %% FUNCTIONS
 
-
-
-
 %% Function to plot walking angles against velocity. Successful are distinguished from unstable gaits
-
 function  walking (walking, velocity, angles_n, velocity_n,angles_flight, velocity_flight, Kp, counter_success,iterations)
     
     figure
@@ -173,18 +180,22 @@ function  walking (walking, velocity, angles_n, velocity_n,angles_flight, veloci
     ylabel('Desired forward velocity')
     title_text = ['Results for Kp = ', num2str(Kp), ' -- Success: ', num2str(counter_success), '/', num2str(iterations)];
     title(title_text);
+    legend('walking','error','flight');
     hold off;
     
 end
 
 %% Function to display an histogram of successful gaits of each Kp during a Kp swept
-
 function kp_optim (successful_vector_gains)
 
     figure
-    histogram(successful_vector_gains, 11);
+    edges = 0:10:80;
+    h = histogram(successful_vector_gains,'BinEdges', edges);
+    h = morebins(h);
     hold on
     title('Kp successful walking gaits');
+    xlabel('Kp values');
+    ylabel('Successes');
     hold off
 
 end
