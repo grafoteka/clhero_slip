@@ -1,7 +1,6 @@
 %%=====================================================================
 
 %Authors: Jorge de León Rivas and Rodrigo Sánchez Molina
-%mails: jorge.deleon@upm.es, rsanchezm@gmail.com
 
 %File: 'simulation_walking.m'
 
@@ -23,11 +22,13 @@
 clc;
 clear;
 
+
 %% Mechanical parameters of the robot
 
 leg_size = 0.203; % m
 stiffness = 5000; % N/m
 mass = 10/3; % Kg
+
 
 %% Initial conditions
 
@@ -76,6 +77,8 @@ counter_error = 0; % counter of non successfull gaits
         disp_text = ['Testing for Kp = ', num2str(Kp), ' --- Desired fordward velocity = ', num2str(desired_vel)];
         disp(disp_text);
 
+        
+
         for angle_walking=40:90 % angle walking swept
             
             iterations = iterations + 1;
@@ -87,21 +90,23 @@ counter_error = 0; % counter of non successfull gaits
                 
                 counter_success = counter_success + 1;
                 counter_successful_gains = counter_successful_gains + 1;
-
+                
                 test_result = ['Successful test ended with Kp = ', num2str(Kp), ' -- Desired forward velocity: ', num2str(desired_vel),' -- Angle walking = ', num2str(angle_walking), ' -- Success = ', num2str(counter_success), '/', num2str(iterations)];
                 disp(test_result);
-
+                
                 % storing succesful data
                 successful_vector_gains(counter_successful_gains,:) = Kp; % to make a histogram of the best controller proportional gain
                 successful_angles(counter_success,counter_velocities) = angle_walking; % keeps succesful angles during each Kp iteration
                 successful_velocities(counter_success,counter_velocities)= desired_vel; % keeps succesful angles during each Kp iteration
 
-                % plotting successful data. Uncomment to plot during each test.
-                plotting(data, desired_vel, leg_size, angle_walking, angle_running, Kp);  % plotting CoM trajectories
-                plotting_forces(data,desired_vel,leg_size, angle_walking, angle_running,Kp); % plotting forces that suffers the CoM
-                pause;  
+               
 
-            else % result = error (jump, backward, touch ground)
+                 % plotting successful data. Uncomment to plot during each test.
+%                   plotting(data, desired_vel, leg_size, angle_walking, angle_running, Kp);  % plotting CoM trajectories
+%                   plotting_forces(data,desired_vel,leg_size, angle_walking, angle_running,Kp); % plotting forces that suffers the CoM
+%                   pause;  
+
+            else 
                 
                 counter_error = counter_error + 1;
                 
@@ -111,6 +116,7 @@ counter_error = 0; % counter of non successfull gaits
                     velocity_flight(counter_error,counter_velocities) = desired_vel;
 
                 else
+                    
                     angles_n(counter_error,counter_velocities) = angle_walking;
                     velocity_n(counter_error,counter_velocities) = desired_vel;
                     
@@ -128,7 +134,7 @@ counter_error = 0; % counter of non successfull gaits
     disp(test_result);
 
     %plotting successful vs non successful gaits according to the angle walking and velocity
-    walking(successful_angles, successful_velocities, angles_n, velocity_n,angles_flight, velocity_flight, Kp, counter_success ,iterations);
+    walking(successful_angles, successful_velocities, angles_n, velocity_n, angles_flight, velocity_flight, Kp, counter_success ,iterations);
 %    pause;
     
   end %for controller Kp
@@ -138,8 +144,9 @@ kp_optim(successful_vector_gains); %plotting results for kp altogheter
  
  
 %% FUNCTIONS
-% walking: plot walking angles against velocity
-% kp_optim: display an histogram of successful gaits of each Kp during a Kp swept
+
+
+
 
 %% Function to plot walking angles against velocity. Successful are distinguished from unstable gaits
 

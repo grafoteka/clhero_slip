@@ -11,16 +11,12 @@ function [sim_data,performance, result, errores]=SLIP_model(parameters, vel_obje
 %%% performance - struct with number of steps, time and distance before
 %%% losing stability
 
-
-
 %% Variable parameters
 q=[parameters(1:4)];
 alpha_firstleg=parameters(5)*pi/180;
 alpha_secondleg=parameters(6)*pi/180;
 K=parameters(7);
 errores=[];
-
-
 
 %% Fixed parameters
 g = 9.81;		% acceleration due to gravity [m/s^2]
@@ -42,8 +38,6 @@ options_flight = odeset('Events', @end_flight);
 
 %% Simulation
 i=1;
-
-
 
 while true
 	% Start with single stance
