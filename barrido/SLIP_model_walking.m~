@@ -1,6 +1,7 @@
 %%=====================================================================
 
 %Authors: Jorge de León Rivas and Rodrigo Sánchez Molina
+%mails: jorge.deleon@upm.es, rsanchezm@gmail.com
 
 %File: 'SLIP_model_walking.m'
 
@@ -14,7 +15,6 @@
 %%=====================================================================
 
 function [data,performance, result]=SLIP_model_walking(initial_parameters, desired_vel, time,l_0, Kp)
-
 
 % Initial_parameters = [x_initial, y_initial, vx_initial, vy_initial, angle_walking, stiffness, mass]
 
@@ -44,8 +44,6 @@ config_flight = odeset('Events', @end_flight);
 %% Simulation
 counter=1;
 
-
-
 while true
     
 	% start with single stance
@@ -73,13 +71,11 @@ while true
     % update the initial conditions
     q = q(end,:);
     
-    
 	% check if passed to double stance phase
 	if result_single==1
         
 		x1 = q(1) + l_0*cos(angle_walking); % new x support point for the second leg
 		y1 = q(2) - l_0*sin(angle_walking); % new y support point for the second leg
-        
         
 		[t,q,~,~,result_double] = ode45(@EoM_double, [0,timeremaining], q, config_double);
         
@@ -96,7 +92,6 @@ while true
 
         % checking if backward motion started
         if result_double == 2; performance.terminationmsg=('Backward motion started'); disp('Backward motion started'); result = 0; break; end
-        
 
         %checking if simulation time is achieved
 		if timeremaining < 10e-5; performance.terminationmsg=('Simulation time achieved');disp('Simulation time achieved'); result = 1; break; end
@@ -132,9 +127,7 @@ while true
     
     % unknown termination cause ocurred
     else; performance.terminationmsg=('Unknown termination cause'); disp('Unknown termination cause');result = 0; break; end;
-    
-    
-   
+
 	counter = counter + 1;
 	
 	if result_double == 3 % The leg which touched ground last took off first
@@ -150,7 +143,6 @@ while true
     %update initial conditions     
 	q = [q(end,1) - x1, q(end,2) - y1, q(end,3:4)];
     
-   
 end
 
 %% Update performance information
@@ -183,36 +175,36 @@ end
 % 		dqdt(4,1) = -g;
 % 	end
 
-	% single stance phase equations of motion EoM
-	function dqdt = EoM_single(~,q)
+% single stance phase equations of motion EoM
+function dqdt = EoM_single(~,q)
 
-        T = Kp*(desired_vel-q(3)); % torque controller
-		dqdt(1,1) = q(3); % vx
-		dqdt(2,1) = q(4); % vy
-		leg_1=sqrt(q(1)^2+q(2)^2); % instantaneous lenght of the leg
-		a_spring=K*(l_0-leg_1)/mass; % acceleration due to the spring
-        a_torque = T/(leg_1*mass); % acceleration due to the torque
-		dqdt(3,1) = a_spring/leg_1*q(1) + a_torque/leg_1*q(2); % ax
-		dqdt(4,1) = a_spring/leg_1*q(2) - a_torque/leg_1*q(1) - g; % ay
-	end
+    T = Kp*(desired_vel-q(3)); % torque controller
+    dqdt(1,1) = q(3); % vx
+    dqdt(2,1) = q(4); % vy
+    leg_1=sqrt(q(1)^2+q(2)^2); % instantaneous lenght of the leg
+    a_spring=K*(l_0-leg_1)/mass; % acceleration due to the spring
+    a_torque = T/(leg_1*mass); % acceleration due to the torque
+    dqdt(3,1) = a_spring/leg_1*q(1) + a_torque/leg_1*q(2); % ax
+    dqdt(4,1) = a_spring/leg_1*q(2) - a_torque/leg_1*q(1) - g; % ay
+end
 	
-	% Double stance phase
-	function dqdt = EoM_double(~,q)
-        %% Regulador con el PAR 
-        
-        T = Kp*(desired_vel-q(3)); 
-    
-        dqdt(1,1) = q(3); % vx
-		dqdt(2,1) = q(4); % vy
-		leg_1=sqrt(q(1)^2+q(2)^2);				% instantaneous lenght of the leg1
-		leg_2=sqrt((q(1)-x1)^2+(q(2)-y1)^2);	% instantaneous lenght of the leg2
-		a_first_spring=K*(l_0-leg_1)/mass;					% acceleration due to first spring
-		a_second_spring=K*(l_0-leg_2)/mass;					% acceleration due to second spring
-        a_first_torque = T/(leg_1*mass); % acceleration due to the torque1
-        a_second_torque = T/(leg_2*mass); % acceleration due to the torque2
-		dqdt(3,1) = a_first_spring*q(1)/leg_1 + a_second_spring*(q(1)-x1)/leg_2 + a_first_torque/leg_1*q(2) + a_second_torque/leg_2*(q(2)-y1); % ax
-		dqdt(4,1) = a_first_spring*q(2)/leg_1 + a_second_spring*(q(2)-y1)/leg_2 - a_first_torque/leg_1*q(1) - a_second_torque/leg_2*(q(1)-x1) - g; % ay
-	end
+% Double stance phase
+function dqdt = EoM_double(~,q)
+    %% Regulador con el PAR 
+
+    T = Kp*(desired_vel-q(3)); 
+
+    dqdt(1,1) = q(3); % vx
+    dqdt(2,1) = q(4); % vy
+    leg_1=sqrt(q(1)^2+q(2)^2);				% instantaneous lenght of the leg1
+    leg_2=sqrt((q(1)-x1)^2+(q(2)-y1)^2);	% instantaneous lenght of the leg2
+    a_first_spring=K*(l_0-leg_1)/mass;					% acceleration due to first spring
+    a_second_spring=K*(l_0-leg_2)/mass;					% acceleration due to second spring
+    a_first_torque = T/(leg_1*mass); % acceleration due to the torque1
+    a_second_torque = T/(leg_2*mass); % acceleration due to the torque2
+    dqdt(3,1) = a_first_spring*q(1)/leg_1 + a_second_spring*(q(1)-x1)/leg_2 + a_first_torque/leg_1*q(2) + a_second_torque/leg_2*(q(2)-y1); % ax
+    dqdt(4,1) = a_first_spring*q(2)/leg_1 + a_second_spring*(q(2)-y1)/leg_2 - a_first_torque/leg_1*q(1) - a_second_torque/leg_2*(q(1)-x1) - g; % ay
+end
 
 %% Event functions of equation of motions to detect transitions and termination
 
